@@ -1,63 +1,109 @@
-const asyncHanlder = require('express-async-handler');
-const goalModel = require('../model/goalModel');
+const asyncHanlder = require("express-async-handler");
+const { default: mongoose } = require("mongoose");
+const goalModel = require("../model/goalModel");
+const userModel = require("../model/userModel");
+
 // @desc        Get goals
 // @Route       GET  /api/goals
 // @access      Private
-const getGoals = asyncHanlder(async(req,res) => {
-    const goals = await goalModel.find({}).sort({createdAt:-1});
-    res.status(200).json(goals);
-})
+const getGoals = asyncHanlder(async (req, res) => {
+  const goals = await goalModel
+    .find({ user: req.user._id })
+    .sort({ createdAt: -1 });
+  res.status(200).json(goals);
+});
 // @desc        Post goal
 // @Route       POST  /api/goals
 // @access      Private
-const setGoal = asyncHanlder(async(req,res) => {
-    if(!req.body.text) {
-        throw new Error('please provide text field');
-    }
-    const goal = await goalModel.create({...req.body});
-    if(!goal) throw new Error('Goal is not added...');
-    res.status(200).json(goal);
-})
+const setGoal = asyncHanlder(async (req, res) => {
+  if (!req.body.text) {
+    throw new Error("please provide text field");
+  }
+  const goal = await goalModel.create({ ...req.body, user: req.user._id });
+  if (!goal) throw new Error("Goal is not added...");
+  res.status(200).json(goal);
+});
 // @desc        Update goal
 // @Route       PUT  /api/goals/:id
 // @access      Private
-const updateGoal = asyncHanlder(async(req,res) => {
-    const { id } = req.params;
-    const goal = await goalModel.findOneAndUpdate({_id:id},{...req.body});
-    if(!goal) {
-        res.status(400);
-        throw new Error('Goal is not updated!!');
-    }
-    res.status(200).json(goal);
-})
+const updateGoal = asyncHanlder(async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error("Goal not found!!");
+  }
+  const goal = await goalModel.findById(id);
+  const user = await userModel.findById(req.user._id);
+  if (!goal) {
+    res.status(401);
+    throw new Error("Goal not found");
+  }
+  if (!user) {
+    res.status(401);
+    throw new Error("User not found.");
+  }
+  if (JSON.stringify(user._id) !== JSON.stringify(goal.user)) {
+    res.status(401);
+    throw new Error("User not authorized.");
+  }
+  const updatedGoal = await goalModel.findByIdAndUpdate(id, { ...req.body });
+  res.status(200).json(updatedGoal);
+});
 // @desc        Delete goal
 // @Route       DELETE  /api/goals/:id
 // @access      Private
-const deleteGoal = asyncHanlder(async(req,res) => {
-    const { id } = req.params;
-    const goal = await goalModel.findOneAndDelete({_id:id});
-    if(!goal) {
-        res.status(400);
-        throw new Error('Goal is not deleted successfully...');
-    }
-    res.status(200).json(goal);
-})
+const deleteGoal = asyncHanlder(async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error("Goal not found!!");
+  }
+  const goal = await goalModel.findById(id);
+  const user = await userModel.findById(req.user._id);
+  if (!goal) {
+    res.status(401);
+    throw new Error("Goal not found");
+  }
+  if (!user) {
+    res.status(401);
+    throw new Error("User not found.");
+  }
+  if (JSON.stringify(user._id) !== JSON.stringify(goal.user)) {
+    res.status(401);
+    throw new Error("User not authorized.");
+  }
+  const deletedGoal = await goalModel.findOneAndDelete({ _id: id });
+  res.status(200).json(deletedGoal);
+});
 // @desc        Get goal
 // @Route       GET  /api/goals/:id
 // @access      Private
-const getGoal = asyncHanlder(async(req,res) => {
-    const { id } = req.params;
-    const goal = await goalModel.find({ _id: id });
-    if(!goal) {
-        res.status(400);
-        throw new Error('Goal not found!!');
-    }
-    res.status(200).json(goal);
-})
+const getGoal = asyncHanlder(async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(401);
+    throw new Error("Goal not found");
+  }
+  const goal = await goalModel.findById(id);
+  const user = await userModel.findById(req.user._id);
+  if (!goal) {
+    res.status(401);
+    throw new Error("Goal not found");
+  }
+  if (!user) {
+    res.status(401);
+    throw new Error("User not found.");
+  }
+  if (JSON.stringify(user._id) !== JSON.stringify(goal.user)) {
+    res.status(401);
+    throw new Error("User not authorized.");
+  }
+  res.status(200).json(goal);
+});
 module.exports = {
-    getGoal,
-    getGoals,
-    setGoal,
-    updateGoal,
-    deleteGoal
-}
+  getGoal,
+  getGoals,
+  setGoal,
+  updateGoal,
+  deleteGoal,
+};
