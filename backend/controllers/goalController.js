@@ -33,16 +33,15 @@ const updateGoal = asyncHanlder(async (req, res) => {
     throw new Error("Goal not found!!");
   }
   const goal = await goalModel.findById(id);
-  const user = await userModel.findById(req.user._id);
   if (!goal) {
     res.status(401);
     throw new Error("Goal not found");
   }
-  if (!user) {
+  if (!req.user) {
     res.status(401);
     throw new Error("User not found.");
   }
-  if (JSON.stringify(user._id) !== JSON.stringify(goal.user)) {
+  if (JSON.stringify(req.user._id) !== JSON.stringify(goal.user)) {
     res.status(401);
     throw new Error("User not authorized.");
   }
@@ -59,16 +58,15 @@ const deleteGoal = asyncHanlder(async (req, res) => {
     throw new Error("Goal not found!!");
   }
   const goal = await goalModel.findById(id);
-  const user = await userModel.findById(req.user._id);
   if (!goal) {
     res.status(401);
     throw new Error("Goal not found");
   }
-  if (!user) {
+  if (!req.user) {
     res.status(401);
     throw new Error("User not found.");
   }
-  if (JSON.stringify(user._id) !== JSON.stringify(goal.user)) {
+  if (JSON.stringify(req.user._id) !== JSON.stringify(goal.user)) {
     res.status(401);
     throw new Error("User not authorized.");
   }
@@ -85,16 +83,15 @@ const getGoal = asyncHanlder(async (req, res) => {
     throw new Error("Goal not found");
   }
   const goal = await goalModel.findById(id);
-  const user = await userModel.findById(req.user._id);
   if (!goal) {
     res.status(401);
     throw new Error("Goal not found");
   }
-  if (!user) {
+  if (!req.user) {
     res.status(401);
     throw new Error("User not found.");
   }
-  if (JSON.stringify(user._id) !== JSON.stringify(goal.user)) {
+  if (JSON.stringify(req.user._id) !== JSON.stringify(goal.user)) {
     res.status(401);
     throw new Error("User not authorized.");
   }
