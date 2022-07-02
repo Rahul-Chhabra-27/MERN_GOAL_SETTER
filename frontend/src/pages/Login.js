@@ -31,7 +31,7 @@ const Login = () => {
   }, [user, isError, isSuccess, message, navigate, dispatch]);
 
   if (isLoading) {
-    <Spinner />;
+    <Spinner />
   }
   const onStateChange = (e) => {
     setFormData((prevState) => ({
